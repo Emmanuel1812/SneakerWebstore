@@ -1,0 +1,51 @@
+
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_DB: supersneakerstore
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  springboot:
+    container_name: springboot
+    build:
+      context: ./Sneakershop_Backend
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://95.217.3.61:5432/webshop_s1150629
+      SPRING_DATASOURCE_USERNAME: s1150629
+      SPRING_DATASOURCE_PASSWORD: s1150629
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+      SPRING_JPA_SHOW_SQL: true
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+
+
+  angular:
+    container_name: angular
+    build:
+      context: ./sneaker-Webshop-Front-End
+      dockerfile: Dockerfile
+    ports:
+      - "4200:4200"
+    environment:
+      BACKEND_URL: http://springboot:8080
+
+
